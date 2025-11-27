@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # MariaDB Database
+  mariadb:
+    image: mariadb:10.11
+    container_name: nocman_mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: nocman_root_2024
+      MARIADB_DATABASE: nocman_db
+      MARIADB_USER: nocman_user
+      MARIADB_PASSWORD: nocman_pass_2024
+      TZ: Asia/Jakarta
+    ports:
+      - "3307:3306"  # Changed from 3306 to avoid conflict
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - nocman_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MARIADB_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache (Optional - untuk session dan caching)
+  redis:
+    image: redis:7-alpine
+    container_name: nocman_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - nocman_network
+    command: redis-server --appendonly yes --requirepass nocman_redis_2024
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # phpMyAdmin untuk management database
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: nocman_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: nocman_root_2024
+      UPLOAD_LIMIT: 100M
+    ports:
+      - "8081:80"
+    networks:
+      - nocman_network
+    depends_on:
+      - mariadb
+
+volumes:
+  mariadb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  nocman_network:
+    driver: bridge
