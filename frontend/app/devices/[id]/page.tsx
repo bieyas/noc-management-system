@@ -77,9 +77,10 @@ export default function DeviceDetailPage({ params }: DeviceDetailPageProps) {
         try {
             // Get connection status
             const statusRes = await mikrotikAPI.getConnectionStatus(parseInt(params.id));
-            setConnectionStatus(statusRes?.data || statusRes);
+            const status = statusRes?.data || statusRes;
+            setConnectionStatus(status);
 
-            if (statusRes?.data?.connected || statusRes?.connected) {
+            if (status?.connected) {
                 // Get system resources
                 const resourcesRes = await mikrotikAPI.getResources(parseInt(params.id));
                 setResources(resourcesRes?.data || resourcesRes);
@@ -274,10 +275,10 @@ export default function DeviceDetailPage({ params }: DeviceDetailPageProps) {
                             <div className="mt-4 bg-gray-200 rounded-full h-2">
                                 <div
                                     className={`h-2 rounded-full ${memoryPercent > 80
-                                            ? 'bg-red-500'
-                                            : memoryPercent > 50
-                                                ? 'bg-yellow-500'
-                                                : 'bg-green-500'
+                                        ? 'bg-red-500'
+                                        : memoryPercent > 50
+                                            ? 'bg-yellow-500'
+                                            : 'bg-green-500'
                                         }`}
                                     style={{ width: `${memoryPercent}%` }}
                                 />
@@ -327,8 +328,8 @@ export default function DeviceDetailPage({ params }: DeviceDetailPageProps) {
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     className={`py-2 px-4 font-medium border-b-2 transition-colors ${activeTab === tab
-                                            ? 'border-blue-600 text-blue-600'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                                        ? 'border-blue-600 text-blue-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
                                         }`}
                                 >
                                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -388,10 +389,10 @@ export default function DeviceDetailPage({ params }: DeviceDetailPageProps) {
                                                 className="bg-green-500 h-2 rounded-full"
                                                 style={{
                                                     width: `${interfaces.length > 0
-                                                            ? (interfaces.filter((i) => i.status === 'up').length /
-                                                                interfaces.length) *
-                                                            100
-                                                            : 0
+                                                        ? (interfaces.filter((i) => i.status === 'up').length /
+                                                            interfaces.length) *
+                                                        100
+                                                        : 0
                                                         }%`,
                                                 }}
                                             />

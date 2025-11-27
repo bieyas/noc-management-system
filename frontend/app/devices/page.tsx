@@ -138,7 +138,7 @@ export default function DevicesPage() {
             setTesting(true);
             setTestResult(null);
             const result = await mikrotikAPI.testConnection({
-                host: formData.ipAddress,
+                ipAddress: formData.ipAddress,
                 port: formData.apiConfig.port,
                 username: formData.apiConfig.username,
                 password: formData.apiConfig.password,
@@ -334,14 +334,14 @@ export default function DevicesPage() {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => handleDelete(device.id)}
+                                            onClick={() => handleDelete(Number(device.id))}
                                             className="text-red-600 hover:text-red-700"
                                         >
                                             <Trash2 className="w-4 h-4 mr-2" />
                                             Delete
                                         </Button>
                                     </div>
-                                    <Button variant="ghost" size="sm" onClick={() => handleViewDetails(device.id)}>
+                                    <Button variant="ghost" size="sm" onClick={() => handleViewDetails(Number(device.id))}>
                                         <Eye className="w-4 h-4 mr-2" />
                                         View Details
                                     </Button>
@@ -621,8 +621,8 @@ export default function DevicesPage() {
                                             {testResult && (
                                                 <div
                                                     className={`p-3 rounded-lg flex items-start gap-2 ${testResult.success
-                                                            ? 'bg-green-50 text-green-800'
-                                                            : 'bg-red-50 text-red-800'
+                                                        ? 'bg-green-50 text-green-800'
+                                                        : 'bg-red-50 text-red-800'
                                                         }`}
                                                 >
                                                     {testResult.success ? (

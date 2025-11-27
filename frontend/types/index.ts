@@ -45,15 +45,22 @@ export interface Device {
   id: string;
   deviceId: string;
   name: string;
-  type: 'router' | 'switch' | 'access-point' | 'server' | 'other';
+  type: 'router' | 'switch' | 'access-point' | 'server' | 'mikrotik' | 'olt' | 'other';
   ipAddress: string;
-  macAddress: string;
+  macAddress?: string;
   location: string;
   status: 'online' | 'offline' | 'maintenance';
   manufacturer?: string;
   model?: string;
+  description?: string;
   snmpVersion?: 'v1' | 'v2c' | 'v3';
   snmpCommunity?: string;
+  apiConfig?: {
+    port: number;
+    username: string;
+    password: string;
+    useSsl: boolean;
+  };
   customerId?: string;
   lastSeen?: string;
   createdAt: string;

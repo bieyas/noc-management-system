@@ -233,7 +233,7 @@ export const dashboardAPI = {
 
 // MikroTik API
 export const mikrotikAPI = {
-  testConnection: (data: { ipAddress: string; port: number; username: string; password: string }) =>
+  testConnection: (data: { ipAddress: string; port: number; username: string; password: string; useSsl?: boolean }) =>
     apiClient.post('/mikrotik/test-connection', data),
   
   connect: (deviceId: number) =>
