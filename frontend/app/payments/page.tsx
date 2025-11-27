@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { paymentAPI, Payment, PaymentStats } from '@/lib/api/payments';
-import { customerAPI } from '@/lib/api/customers';
+import { paymentAPI, customerAPI } from '@/lib/api/client';
+import { Payment, PaymentStats } from '@/lib/api/payments';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';

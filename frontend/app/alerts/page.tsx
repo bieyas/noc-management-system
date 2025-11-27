@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { alertAPI, Alert, AlertStats } from '@/lib/api/alerts';
+import { alertAPI } from '@/lib/api/client';
+import { Alert, AlertStats } from '@/lib/api/alerts';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';

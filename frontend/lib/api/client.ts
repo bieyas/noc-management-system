@@ -125,7 +125,7 @@ export const paymentAPI = {
   getAll: (params?: any) =>
     apiClient.get('/payments', { params }),
   
-  getById: (id: string) =>
+  getById: (id: string | number) =>
     apiClient.get(`/payments/${id}`),
   
   create: (data: any) =>
@@ -134,10 +134,13 @@ export const paymentAPI = {
   update: (id: string, data: any) =>
     apiClient.put(`/payments/${id}`, data),
   
+  updateStatus: (id: number, status: string) =>
+    apiClient.patch(`/payments/${id}/status`, { status }),
+  
   process: (id: string, data: any) =>
     apiClient.put(`/payments/${id}/process`, data),
   
-  delete: (id: string) =>
+  delete: (id: string | number) =>
     apiClient.delete(`/payments/${id}`),
   
   getStats: (params?: any) =>
@@ -145,6 +148,12 @@ export const paymentAPI = {
   
   getMonthlyRevenue: (params?: any) =>
     apiClient.get('/payments/revenue/monthly', { params }),
+  
+  getByCustomer: (customerId: number) =>
+    apiClient.get(`/payments/customer/${customerId}`),
+  
+  generateInvoice: (paymentId: number) =>
+    apiClient.post(`/payments/${paymentId}/invoice`),
 };
 
 // Alert API
@@ -152,7 +161,7 @@ export const alertAPI = {
   getAll: (params?: any) =>
     apiClient.get('/alerts', { params }),
   
-  getById: (id: string) =>
+  getById: (id: string | number) =>
     apiClient.get(`/alerts/${id}`),
   
   create: (data: any) =>
@@ -161,17 +170,26 @@ export const alertAPI = {
   acknowledge: (id: string) =>
     apiClient.put(`/alerts/${id}/acknowledge`),
   
-  resolve: (id: string, data?: any) =>
+  resolve: (id: string | number, data?: any) =>
     apiClient.put(`/alerts/${id}/resolve`, data),
   
   dismiss: (id: string) =>
     apiClient.put(`/alerts/${id}/dismiss`),
   
-  delete: (id: string) =>
+  delete: (id: string | number) =>
     apiClient.delete(`/alerts/${id}`),
   
   getStats: () =>
     apiClient.get('/alerts/stats'),
+  
+  markAsRead: (id: number) =>
+    apiClient.patch(`/alerts/${id}/read`),
+  
+  markMultipleAsRead: (ids: number[]) =>
+    apiClient.post('/alerts/mark-read', { ids }),
+  
+  markAllAsRead: () =>
+    apiClient.post('/alerts/mark-all-read'),
 };
 
 // Bandwidth API
@@ -190,6 +208,21 @@ export const bandwidthAPI = {
   
   getTopConsumers: (params?: any) =>
     apiClient.get('/bandwidth/top', { params }),
+  
+  getRealtime: () =>
+    apiClient.get('/bandwidth/realtime'),
+  
+  getHistory: (params?: any) =>
+    apiClient.get('/bandwidth/history', { params }),
+  
+  getStats: (params?: any) =>
+    apiClient.get('/bandwidth/stats', { params }),
+  
+  getByCustomer: (customerId: number) =>
+    apiClient.get(`/bandwidth/customer/${customerId}`),
+  
+  getByDevice: (deviceId: number) =>
+    apiClient.get(`/bandwidth/device/${deviceId}`),
 };
 
 // Dashboard API

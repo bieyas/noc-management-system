@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { bandwidthAPI, BandwidthUsage, BandwidthStats, BandwidthHistory } from '@/lib/api/bandwidth';
-import { customerAPI } from '@/lib/api/customers';
+import { bandwidthAPI, customerAPI } from '@/lib/api/client';
+import { BandwidthUsage, BandwidthStats, BandwidthHistory } from '@/lib/api/bandwidth';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
