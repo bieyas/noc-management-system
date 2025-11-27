@@ -60,15 +60,37 @@ export default function SubscriptionsPage() {
             const params: any = {};
             if (statusFilter !== 'all') params.status = statusFilter;
 
-            const [subsRes, statsRes, customersRes] = await Promise.all([
+            const [subsRes, customersRes] = await Promise.all([
                 subscriptionAPI.getAll(params),
-                subscriptionAPI.getStats?.() || Promise.resolve({ data: null }),
                 customerAPI.getAll(),
             ]);
 
             const subsData = subsRes?.data || subsRes || [];
-            const statsData = statsRes?.data || statsRes || null;
             const customersData = customersRes?.data || customersRes || [];
+
+            // Calculate stats from subscriptions data
+            const now = new Date();
+            const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+            const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+            const statsData: SubscriptionStats = {
+                total: subsData.length,
+                active: subsData.filter((s: any) => s.status === 'active').length,
+                expired: subsData.filter((s: any) => s.status === 'expired').length,
+                suspended: subsData.filter((s: any) => s.status === 'suspended').length,
+                totalRevenue: subsData.reduce((sum: number, s: any) => sum + (s.price || 0), 0),
+                monthlyRevenue: subsData
+                    .filter((s: any) => s.status === 'active' && s.billingCycle === 'monthly')
+                    .reduce((sum: number, s: any) => sum + (s.price || 0), 0),
+                expiringThisWeek: subsData.filter((s: any) => {
+                    const endDate = new Date(s.endDate);
+                    return endDate <= oneWeekFromNow && endDate > now;
+                }).length,
+                expiringThisMonth: subsData.filter((s: any) => {
+                    const endDate = new Date(s.endDate);
+                    return endDate <= oneMonthFromNow && endDate > now;
+                }).length,
+            };
 
             // Map customer names
             const subscriptionsWithCustomers = subsData.map((sub: Subscription) => {
@@ -94,7 +116,7 @@ export default function SubscriptionsPage() {
         e.preventDefault();
         try {
             if (editingSubscription) {
-                await subscriptionAPI.update(editingSubscription.id, formData);
+                await subscriptionAPI.update(String(editingSubscription.id), formData);
                 toast.success('Subscription updated successfully');
             } else {
                 await subscriptionAPI.create(formData);
@@ -115,10 +137,10 @@ export default function SubscriptionsPage() {
         setFormData({
             customerId: subscription.customerId,
             planName: subscription.planName,
-            planType: subscription.planType,
+            planType: subscription.planType as 'basic',
             bandwidth: subscription.bandwidth,
             price: subscription.price,
-            billingCycle: subscription.billingCycle,
+            billingCycle: subscription.billingCycle as 'monthly',
             startDate: subscription.startDate.split('T')[0],
             endDate: subscription.endDate.split('T')[0],
             autoRenew: subscription.autoRenew,
@@ -131,7 +153,7 @@ export default function SubscriptionsPage() {
         if (!confirm('Are you sure you want to delete this subscription?')) return;
 
         try {
-            await subscriptionAPI.delete(id);
+            await subscriptionAPI.delete(String(id));
             toast.success('Subscription deleted successfully');
             fetchData();
         } catch (error) {
@@ -142,7 +164,7 @@ export default function SubscriptionsPage() {
 
     const handleStatusUpdate = async (id: number, status: string) => {
         try {
-            await subscriptionAPI.update(id, { status });
+            await subscriptionAPI.update(String(id), { status });
             toast.success(`Subscription ${status}`);
             fetchData();
         } catch (error) {
