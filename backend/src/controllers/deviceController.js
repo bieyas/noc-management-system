@@ -80,6 +80,12 @@ exports.createDevice = async (req, res) => {
       req.body.deviceId = `DEV-${String(count + 1).padStart(6, '0')}`;
     }
 
+    // Set initial status to online for MikroTik if test was successful
+    if (req.body.type === 'mikrotik' && req.body.apiConfig) {
+      req.body.status = 'online';
+      req.body.lastSeen = new Date();
+    }
+
     const device = await Device.create(req.body);
 
     res.status(201).json({

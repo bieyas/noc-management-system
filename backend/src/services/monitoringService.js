@@ -1,10 +1,62 @@
 const ping = require('ping');
 const { Device, NetworkLog, Alert, sequelize } = require('../models');
 const socketService = require('./socketService');
+const mikrotikService = require('./mikrotikService');
 
 class MonitoringService {
   constructor() {
     this.isRunning = false;
+  }
+
+  // Check device connectivity (ping for regular devices, API for MikroTik)
+  async checkDevice(device) {
+    try {
+      // For MikroTik devices with API config, use API check
+      if (device.type === 'mikrotik' && device.apiConfig) {
+        return await this.checkMikrotikDevice(device);
+      }
+      
+      // For other devices, use ping
+      return await this.pingDevice(device);
+    } catch (error) {
+      console.error(`Error checking device ${device.name}:`, error.message);
+      return { alive: false, error: error.message };
+    }
+  }
+
+  // Check MikroTik device via API
+  async checkMikrotikDevice(device) {
+    try {
+      // Try to get system resources (lightweight check)
+      const resources = await mikrotikService.getSystemResources(device);
+      
+      const logData = {
+        deviceId: device.id,
+        logType: 'ping',
+        status: 'success',
+        responseTime: null,
+        message: 'MikroTik API responding'
+      };
+
+      await NetworkLog.create(logData);
+
+      // Update device status
+      const newStatus = 'online';
+      const previousStatus = device.status;
+
+      if (newStatus !== previousStatus) {
+        await this.updateDeviceStatus(device, newStatus, previousStatus);
+      } else {
+        // Just update lastSeen
+        device.lastSeen = new Date();
+        await device.save();
+      }
+
+      return { alive: true, mikrotik: true };
+    } catch (error) {
+      // If API check fails, fallback to ping
+      return await this.pingDevice(device);
+    }
   }
 
   // Ping a single device
@@ -31,16 +83,32 @@ class MonitoringService {
       const previousStatus = device.status;
 
       if (newStatus !== previousStatus) {
-        device.status = newStatus;
-        device.lastSeen = result.alive ? new Date() : device.lastSeen;
+        await this.updateDeviceStatus(device, newStatus, previousStatus);
+      } else if (result.alive) {
+        device.lastSeen = new Date();
         await device.save();
+      }
 
-        // Emit device status update via WebSocket
-        socketService.emitDeviceStatus(device.id, newStatus, {
-          deviceName: device.name,
-          ipAddress: device.ipAddress,
-          lastSeen: device.lastSeen
-        });
+      return result;
+    } catch (error) {
+      console.error(`Error pinging device ${device.name}:`, error.message);
+      return { alive: false, error: error.message };
+    }
+  }
+
+  // Update device status and create alerts
+  async updateDeviceStatus(device, newStatus, previousStatus) {
+    try {
+      device.status = newStatus;
+      device.lastSeen = newStatus === 'online' ? new Date() : device.lastSeen;
+      await device.save();
+
+      // Emit device status update via WebSocket
+      socketService.emitDeviceStatus(device.id, newStatus, {
+        deviceName: device.name,
+        ipAddress: device.ipAddress,
+        lastSeen: device.lastSeen
+      });
 
         // Create alert if device went offline
         if (newStatus === 'offline') {
@@ -82,14 +150,14 @@ class MonitoringService {
   async monitorAllDevices() {
     try {
       // Query devices where monitoring.enabled = true in JSON field
-      const devices = await Device.findAll({
+      const devices = await Device.scope('withCredentials').findAll({
         where: sequelize.literal("JSON_EXTRACT(monitoring, '$.enabled') = true")
       });
 
       console.log(`Monitoring ${devices.length} devices...`);
 
       for (const device of devices) {
-        await this.pingDevice(device);
+        await this.checkDevice(device);
       }
 
       console.log('Device monitoring completed');

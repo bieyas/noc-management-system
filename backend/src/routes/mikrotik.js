@@ -56,6 +56,12 @@ router.post('/:id/connect', async (req, res) => {
 
     await mikrotikService.connect(device);
 
+    // Update device status to online
+    await device.update({
+      status: 'online',
+      lastSeen: new Date(),
+    });
+
     res.status(200).json({
       success: true,
       message: `Connected to ${device.name}`,
