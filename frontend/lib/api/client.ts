@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+// Always use relative URL to leverage Next.js API proxy
+// This works for both localhost and remote access
+const API_URL = '';
 
 // Create axios instance
 export const apiClient = axios.create({

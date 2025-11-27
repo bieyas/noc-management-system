@@ -23,7 +23,7 @@ module.exports = (sequelize) => {
       }
     },
     type: {
-      type: DataTypes.ENUM('router', 'switch', 'access-point', 'server', 'firewall', 'other'),
+      type: DataTypes.ENUM('router', 'switch', 'access-point', 'server', 'firewall', 'mikrotik', 'olt', 'other'),
       allowNull: false
     },
     brand: {
@@ -47,10 +47,14 @@ module.exports = (sequelize) => {
       allowNull: true
     },
     location: {
-      type: DataTypes.JSON,
+      type: DataTypes.STRING(200),
       allowNull: true,
-      defaultValue: {},
-      comment: 'JSON with fields: name, address, coordinates {latitude, longitude}'
+      comment: 'Device location/address'
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'Device description'
     },
     status: {
       type: DataTypes.ENUM('online', 'offline', 'warning', 'maintenance'),
@@ -82,6 +86,12 @@ module.exports = (sequelize) => {
       allowNull: true,
       defaultValue: {},
       comment: 'JSON with fields: username, password - hidden by default'
+    },
+    apiConfig: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: {},
+      comment: 'JSON with API configuration (port, username, password, useSsl) for MikroTik and similar devices'
     },
     monitoring: {
       type: DataTypes.JSON,
@@ -123,11 +133,11 @@ module.exports = (sequelize) => {
       }
     },
     defaultScope: {
-      attributes: { exclude: ['snmpCommunity', 'credentials'] }
+      attributes: { exclude: ['snmpCommunity', 'credentials', 'apiConfig'] }
     },
     scopes: {
       withCredentials: {
-        attributes: { include: ['snmpCommunity', 'credentials'] }
+        attributes: { include: ['snmpCommunity', 'credentials', 'apiConfig'] }
       }
     }
   });
