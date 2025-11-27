@@ -111,10 +111,12 @@ app.use(errorHandler);
 
 // Start server
 const PORT = config.port;
+const HOST = '0.0.0.0'; // Listen on all network interfaces
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, HOST, () => {
   console.log(`\n🚀 Server running in ${config.env} mode on port ${PORT}`);
   console.log(`📡 API available at http://localhost:${PORT}`);
+  console.log(`🌐 Network access at http://160.22.31.215:${PORT}`);
   console.log(`💚 Health check: http://localhost:${PORT}/health\n`);
 
   // Initialize WebSocket service

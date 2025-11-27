@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const mikrotikService = require('../services/mikrotikService');
 const { Device } = require('../models');
-const { authenticate, authorize } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 
 // Apply authentication to all routes
-router.use(authenticate);
+router.use(protect);
 
 // Test MikroTik connection (without saving)
 router.post('/test-connection', async (req, res) => {
