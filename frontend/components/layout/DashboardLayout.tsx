@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/auth';
@@ -35,9 +35,14 @@ const menuItems = [
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
     const { user, clearAuth } = useAuthStore();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleLogout = () => {
         clearAuth();
@@ -111,9 +116,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-gray-900 truncate">
-                                    {user?.fullName || user?.username}
+                                    {mounted ? (user?.fullName || user?.username || 'User') : 'Loading...'}
                                 </p>
-                                <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+                                <p className="text-xs text-gray-500 capitalize">
+                                    {mounted ? (user?.role || 'user') : ''}
+                                </p>
                             </div>
                         </div>
                         <button

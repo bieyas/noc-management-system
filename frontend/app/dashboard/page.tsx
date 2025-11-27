@@ -31,20 +31,7 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // TEMPORARY: Skip API untuk test
-        setTimeout(() => {
-            setStats({
-                totalCustomers: 0,
-                activeCustomers: 0,
-                totalDevices: 0,
-                onlineDevices: 0,
-                totalRevenue: 0,
-                pendingPayments: 0,
-                criticalAlerts: 0,
-            });
-            setLoading(false);
-        }, 1000);
-        // fetchDashboardData();
+        fetchDashboardData();
     }, []);
 
     const fetchDashboardData = async () => {
