@@ -1,5 +1,6 @@
 const ping = require('ping');
 const { Device, NetworkLog, Alert, sequelize } = require('../models');
+const socketService = require('./socketService');
 
 class MonitoringService {
   constructor() {
@@ -34,9 +35,16 @@ class MonitoringService {
         device.lastSeen = result.alive ? new Date() : device.lastSeen;
         await device.save();
 
+        // Emit device status update via WebSocket
+        socketService.emitDeviceStatus(device.id, newStatus, {
+          deviceName: device.name,
+          ipAddress: device.ipAddress,
+          lastSeen: device.lastSeen
+        });
+
         // Create alert if device went offline
         if (newStatus === 'offline') {
-          await Alert.create({
+          const alert = await Alert.create({
             deviceId: device.id,
             severity: 'high',
             type: 'device-down',
@@ -44,9 +52,12 @@ class MonitoringService {
             description: `Device ${device.name} (${device.ipAddress}) is not responding to ping requests.`,
             status: 'active'
           });
+
+          // Emit alert via WebSocket
+          socketService.emitNewAlert(alert.toJSON());
         } else {
           // Create alert when device comes back online
-          await Alert.create({
+          const alert = await Alert.create({
             deviceId: device.id,
             severity: 'info',
             type: 'device-up',
@@ -54,6 +65,9 @@ class MonitoringService {
             description: `Device ${device.name} (${device.ipAddress}) is now responding.`,
             status: 'active'
           });
+
+          // Emit alert via WebSocket
+          socketService.emitNewAlert(alert.toJSON());
         }
       }
 

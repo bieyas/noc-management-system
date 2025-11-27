@@ -11,6 +11,7 @@ const { errorHandler, notFound } = require('./middleware/error');
 // Import services
 const monitoringService = require('./services/monitoringService');
 const billingService = require('./services/billingService');
+const socketService = require('./services/socketService');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -21,6 +22,7 @@ const paymentRoutes = require('./routes/payments');
 const deviceRoutes = require('./routes/devices');
 const alertRoutes = require('./routes/alerts');
 const bandwidthRoutes = require('./routes/bandwidth');
+const testRoutes = require('./routes/test');
 
 // Initialize express app
 const app = express();
@@ -56,6 +58,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/bandwidth', bandwidthRoutes);
+app.use('/api/test', testRoutes);
 
 // Dashboard statistics endpoint
 app.get('/api/dashboard/stats', async (req, res) => {
@@ -111,6 +114,9 @@ const server = app.listen(PORT, () => {
   console.log(`\n🚀 Server running in ${config.env} mode on port ${PORT}`);
   console.log(`📡 API available at http://localhost:${PORT}`);
   console.log(`💚 Health check: http://localhost:${PORT}/health\n`);
+
+  // Initialize WebSocket service
+  socketService.initialize(server);
 
   // Start monitoring service
   monitoringService.start(config.monitoring.pingInterval);

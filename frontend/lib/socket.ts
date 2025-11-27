@@ -12,33 +12,40 @@ class SocketService {
 
     const socketUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-    this.socket = io(socketUrl, {
-      auth: {
-        token,
-      },
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionAttempts: 5,
-    });
+    try {
+      this.socket = io(socketUrl, {
+        auth: {
+          token,
+        },
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5,
+        timeout: 10000,
+      });
 
-    this.socket.on('connect', () => {
-      console.log('Socket connected:', this.socket?.id);
-      this.isConnected = true;
-    });
+      this.socket.on('connect', () => {
+        console.log('Socket connected:', this.socket?.id);
+        this.isConnected = true;
+      });
 
-    this.socket.on('disconnect', (reason) => {
-      console.log('Socket disconnected:', reason);
+      this.socket.on('disconnect', (reason) => {
+        console.log('Socket disconnected:', reason);
+        this.isConnected = false;
+      });
+
+      this.socket.on('connect_error', (error) => {
+        console.error('Socket connection error:', error.message);
+        this.isConnected = false;
+      });
+
+      this.socket.on('error', (error) => {
+        console.error('Socket error:', error);
+      });
+    } catch (error) {
+      console.error('Failed to initialize socket:', error);
       this.isConnected = false;
-    });
-
-    this.socket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
-    });
-
-    this.socket.on('error', (error) => {
-      console.error('Socket error:', error);
-    });
+    }
   }
 
   disconnect() {
