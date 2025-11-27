@@ -23,6 +23,7 @@ const deviceRoutes = require('./routes/devices');
 const alertRoutes = require('./routes/alerts');
 const bandwidthRoutes = require('./routes/bandwidth');
 const testRoutes = require('./routes/test');
+const mikrotikRoutes = require('./routes/mikrotik');
 
 // Initialize express app
 const app = express();
@@ -59,6 +60,7 @@ app.use('/api/devices', deviceRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/bandwidth', bandwidthRoutes);
 app.use('/api/test', testRoutes);
+app.use('/api/mikrotik', mikrotikRoutes);
 
 // Dashboard statistics endpoint
 app.get('/api/dashboard/stats', async (req, res) => {
