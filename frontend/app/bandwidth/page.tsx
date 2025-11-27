@@ -6,7 +6,7 @@ import { BandwidthUsage, BandwidthStats, BandwidthHistory } from '@/lib/api/band
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Loading } from '@/components/ui/Loading';
+import { LoadingSpinner } from '@/components/ui/Loading';
 import {
     LineChart,
     Line,
@@ -48,8 +48,8 @@ export default function BandwidthPage() {
 
         // Auto-refresh every 10 seconds if enabled
         if (autoRefresh) {
-            const refreshInterval = setInterval(fetchData, 10000);
-            return () => clearInterval(refreshInterval);
+            const refreshInterval = window.setInterval(() => fetchData(), 10000);
+            return () => window.clearInterval(refreshInterval);
         }
     }, [interval, selectedCustomer, autoRefresh]);
 
@@ -59,12 +59,17 @@ export default function BandwidthPage() {
             const params: any = { interval };
             if (selectedCustomer) params.customerId = selectedCustomer;
 
-            const [currentData, historyData, statsData, customersData] = await Promise.all([
+            const [currentRes, historyRes, statsRes, customersRes] = await Promise.all([
                 bandwidthAPI.getRealtime(),
                 bandwidthAPI.getHistory(params),
                 bandwidthAPI.getStats(params),
                 customerAPI.getAll(),
             ]);
+
+            const currentData = currentRes?.data || currentRes || [];
+            const historyData = historyRes?.data || historyRes || [];
+            const statsData = statsRes?.data || statsRes || null;
+            const customersData = customersRes?.data || customersRes || [];
 
             // Map customer names
             const usageWithCustomers = currentData.map((usage: BandwidthUsage) => {
@@ -117,7 +122,7 @@ export default function BandwidthPage() {
     if (loading && !stats) {
         return (
             <div className="flex items-center justify-center h-screen">
-                <Loading size="lg" />
+                <LoadingSpinner size="lg" />
             </div>
         );
     }
@@ -134,14 +139,14 @@ export default function BandwidthPage() {
                 </div>
                 <div className="flex gap-3">
                     <Button
-                        variant={autoRefresh ? 'default' : 'outline'}
+                        variant={autoRefresh ? 'primary' : 'secondary'}
                         onClick={() => setAutoRefresh(!autoRefresh)}
                         className="flex items-center gap-2"
                     >
                         <RefreshCw className={`w-4 h-4 ${autoRefresh ? 'animate-spin' : ''}`} />
                         {autoRefresh ? 'Auto Refresh On' : 'Auto Refresh Off'}
                     </Button>
-                    <Button onClick={fetchData} variant="outline" className="flex items-center gap-2">
+                    <Button onClick={fetchData} variant="secondary" className="flex items-center gap-2">
                         <RefreshCw className="w-4 h-4" />
                         Refresh Now
                     </Button>

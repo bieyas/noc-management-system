@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
-import { Loading } from '@/components/ui/Loading';
+import { LoadingSpinner } from '@/components/ui/Loading';
 import {
     DollarSign,
     TrendingUp,
@@ -44,11 +44,15 @@ export default function PaymentsPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [paymentsData, statsData, customersData] = await Promise.all([
+            const [paymentsRes, statsRes, customersRes] = await Promise.all([
                 paymentAPI.getAll(statusFilter !== 'all' ? { status: statusFilter } : undefined),
                 paymentAPI.getStats(),
                 customerAPI.getAll(),
             ]);
+
+            const paymentsData = paymentsRes?.data || paymentsRes || [];
+            const statsData = statsRes?.data || statsRes || null;
+            const customersData = customersRes?.data || customersRes || [];
 
             // Map customer names to payments
             const paymentsWithCustomers = paymentsData.map((payment: Payment) => {
@@ -108,10 +112,10 @@ export default function PaymentsPage() {
     };
 
     const getStatusBadge = (status: string) => {
-        const variants: { [key: string]: 'success' | 'warning' | 'error' | 'default' } = {
+        const variants: { [key: string]: 'success' | 'warning' | 'danger' | 'default' } = {
             completed: 'success',
             pending: 'warning',
-            failed: 'error',
+            failed: 'danger',
             cancelled: 'default',
         };
         return <Badge variant={variants[status] || 'default'}>{status}</Badge>;
@@ -152,7 +156,7 @@ export default function PaymentsPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen">
-                <Loading size="lg" />
+                <LoadingSpinner size="lg" />
             </div>
         );
     }
@@ -262,7 +266,7 @@ export default function PaymentsPage() {
                             <option value="pending">Pending</option>
                             <option value="failed">Failed</option>
                         </select>
-                        <Button variant="outline" className="flex items-center gap-2">
+                        <Button variant="secondary" className="flex items-center gap-2">
                             <Download className="w-4 h-4" />
                             Export
                         </Button>
@@ -448,7 +452,7 @@ export default function PaymentsPage() {
                                 </Button>
                                 <Button
                                     type="button"
-                                    variant="outline"
+                                    variant="secondary"
                                     onClick={() => setShowAddModal(false)}
                                     className="flex-1"
                                 >

@@ -7,6 +7,7 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   setAuth: (user: User, token: string) => void;
+  logout: () => void;
   clearAuth: () => void;
 }
 
@@ -20,6 +21,11 @@ export const useAuthStore = create<AuthState>()(
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         set({ user, token, isAuthenticated: true });
+      },
+      logout: () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        set({ user: null, token: null, isAuthenticated: false });
       },
       clearAuth: () => {
         localStorage.removeItem('token');

@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
-import { Loading } from '@/components/ui/Loading';
+import { LoadingSpinner } from '@/components/ui/Loading';
 import {
     AlertTriangle,
     Bell,
@@ -50,10 +50,13 @@ export default function AlertsPage() {
             if (statusFilter === 'resolved') params.isResolved = true;
             if (statusFilter === 'unresolved') params.isResolved = false;
 
-            const [alertsData, statsData] = await Promise.all([
+            const [alertsRes, statsRes] = await Promise.all([
                 alertAPI.getAll(params),
                 alertAPI.getStats(),
             ]);
+
+            const alertsData = alertsRes?.data || alertsRes || [];
+            const statsData = statsRes?.data || statsRes || null;
 
             setAlerts(alertsData);
             setStats(statsData);
@@ -136,8 +139,8 @@ export default function AlertsPage() {
     };
 
     const getSeverityBadge = (severity: string) => {
-        const variants: { [key: string]: 'error' | 'warning' | 'success' | 'default' } = {
-            critical: 'error',
+        const variants: { [key: string]: 'success' | 'warning' | 'danger' | 'default' } = {
+            critical: 'danger',
             high: 'warning',
             medium: 'warning',
             low: 'default',
@@ -175,7 +178,7 @@ export default function AlertsPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen">
-                <Loading size="lg" />
+                <LoadingSpinner size="lg" />
             </div>
         );
     }
@@ -189,7 +192,7 @@ export default function AlertsPage() {
                     <p className="text-gray-500 mt-1">Monitor and manage system alerts</p>
                 </div>
                 {stats && stats.unread > 0 && (
-                    <Button onClick={handleMarkAllAsRead} variant="outline" className="flex items-center gap-2">
+                    <Button onClick={handleMarkAllAsRead} variant="secondary" className="flex items-center gap-2">
                         <Check className="w-4 h-4" />
                         Mark All as Read
                     </Button>

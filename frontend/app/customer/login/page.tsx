@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authAPI } from '@/lib/api/client';
-import { useAuthStore } from '@/lib/store/authStore';
+import { useAuthStore } from '@/lib/store/auth';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';

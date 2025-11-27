@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/lib/store/authStore';
+import { useAuthStore } from '@/lib/store/auth';
 import { authAPI, subscriptionAPI, paymentAPI, bandwidthAPI } from '@/lib/api/client';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Loading } from '@/components/ui/Loading';
+import { LoadingSpinner } from '@/components/ui/Loading';
 import {
     User,
     CreditCard,
@@ -39,11 +39,12 @@ export default function CustomerDashboardPage() {
         try {
             const [subscriptionRes, paymentsRes, bandwidthRes] = await Promise.all([
                 subscriptionAPI.getAll({ customerId: user?.id }).catch(() => ({ data: [] })),
-                paymentAPI.getByCustomer(user?.id || 0).catch(() => ({ data: [] })),
-                bandwidthAPI.getByCustomer(user?.id || 0).catch(() => ({ data: [] })),
+                paymentAPI.getByCustomer(Number(user?.id) || 0).catch(() => ({ data: [] })),
+                bandwidthAPI.getByCustomer(Number(user?.id) || 0).catch(() => ({ data: [] })),
             ]);
 
-            const subscription = subscriptionRes?.data?.[0] || subscriptionRes?.[0];
+            const subscriptionData = subscriptionRes?.data || subscriptionRes || [];
+            const subscription = Array.isArray(subscriptionData) ? subscriptionData[0] : subscriptionData;
             const payments = Array.isArray(paymentsRes?.data) ? paymentsRes.data : (Array.isArray(paymentsRes) ? paymentsRes : []);
             const bandwidth = Array.isArray(bandwidthRes?.data) ? bandwidthRes.data : (Array.isArray(bandwidthRes) ? bandwidthRes : []);
 
@@ -71,7 +72,7 @@ export default function CustomerDashboardPage() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <Loading size="lg" />
+                <LoadingSpinner size="lg" />
             </div>
         );
     }
@@ -185,8 +186,8 @@ export default function CustomerDashboardPage() {
                                     <div className="flex items-center gap-2 mb-2">
                                         <span className="text-xl font-bold text-gray-900">{subscription.planName}</span>
                                         <span className={`px-2 py-1 rounded text-xs font-medium ${subscription.status === 'active' ? 'bg-green-100 text-green-700' :
-                                                subscription.status === 'expired' ? 'bg-red-100 text-red-700' :
-                                                    'bg-yellow-100 text-yellow-700'
+                                            subscription.status === 'expired' ? 'bg-red-100 text-red-700' :
+                                                'bg-yellow-100 text-yellow-700'
                                             }`}>
                                             {subscription.status}
                                         </span>
@@ -249,8 +250,8 @@ export default function CustomerDashboardPage() {
                                                 </td>
                                                 <td className="px-4 py-3 text-sm">
                                                     <span className={`px-2 py-1 rounded text-xs font-medium ${payment.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                                            payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                                'bg-red-100 text-red-700'
+                                                        payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                            'bg-red-100 text-red-700'
                                                         }`}>
                                                         {payment.status}
                                                     </span>
