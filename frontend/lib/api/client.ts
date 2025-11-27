@@ -230,3 +230,45 @@ export const dashboardAPI = {
   getStats: () =>
     apiClient.get('/dashboard/stats'),
 };
+
+// MikroTik API
+export const mikrotikAPI = {
+  testConnection: (data: { ipAddress: string; port: number; username: string; password: string }) =>
+    apiClient.post('/mikrotik/test-connection', data),
+  
+  connect: (deviceId: number) =>
+    apiClient.post(`/mikrotik/${deviceId}/connect`),
+  
+  disconnect: (deviceId: number) =>
+    apiClient.post(`/mikrotik/${deviceId}/disconnect`),
+  
+  getConnectionStatus: (deviceId: number) =>
+    apiClient.get(`/mikrotik/${deviceId}/connection-status`),
+  
+  getResources: (deviceId: number) =>
+    apiClient.get(`/mikrotik/${deviceId}/resources`),
+  
+  getInterfaces: (deviceId: number) =>
+    apiClient.get(`/mikrotik/${deviceId}/interfaces`),
+  
+  getInterfaceTraffic: (deviceId: number, interfaceName: string) =>
+    apiClient.get(`/mikrotik/${deviceId}/interfaces/${interfaceName}/traffic`),
+  
+  getIpAddresses: (deviceId: number) =>
+    apiClient.get(`/mikrotik/${deviceId}/ip-addresses`),
+  
+  getDhcpLeases: (deviceId: number) =>
+    apiClient.get(`/mikrotik/${deviceId}/dhcp-leases`),
+  
+  getPppoeSessions: (deviceId: number) =>
+    apiClient.get(`/mikrotik/${deviceId}/pppoe-sessions`),
+  
+  getWirelessClients: (deviceId: number) =>
+    apiClient.get(`/mikrotik/${deviceId}/wireless-clients`),
+  
+  getLogs: (deviceId: number, limit?: number) =>
+    apiClient.get(`/mikrotik/${deviceId}/logs`, { params: { limit } }),
+  
+  executeCommand: (deviceId: number, command: string, params?: any[]) =>
+    apiClient.post(`/mikrotik/${deviceId}/command`, { command, params }),
+};
