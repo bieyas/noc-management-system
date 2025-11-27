@@ -25,18 +25,20 @@ export default function LoginPage() {
             const response: any = await authAPI.login(formData);
 
             if (response.success) {
-                setAuth(response.data.user, response.data.token);
+                // Backend returns: {success, token, data: {user}}
+                setAuth(response.data, response.token);
                 toast.success('Login berhasil!');
 
                 // Redirect based on role
-                if (response.data.user.role === 'customer') {
+                if (response.data.role === 'customer') {
                     router.push('/customer-portal');
                 } else {
                     router.push('/dashboard');
                 }
             }
         } catch (error: any) {
-            toast.error(error?.message || 'Login gagal. Periksa username dan password Anda.');
+            console.error('Login error:', error);
+            toast.error(error?.response?.data?.message || error?.message || 'Login gagal. Periksa username dan password Anda.');
         } finally {
             setIsLoading(false);
         }

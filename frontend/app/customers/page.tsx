@@ -33,9 +33,9 @@ export default function CustomersPage() {
     };
 
     const filteredCustomers = customers.filter(customer =>
-        customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.customerId.toLowerCase().includes(searchTerm.toLowerCase())
+        (customer.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (customer.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (customer.customerId || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (

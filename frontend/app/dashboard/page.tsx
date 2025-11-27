@@ -31,32 +31,107 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchDashboardData();
+        // TEMPORARY: Skip API untuk test
+        setTimeout(() => {
+            setStats({
+                totalCustomers: 0,
+                activeCustomers: 0,
+                totalDevices: 0,
+                onlineDevices: 0,
+                totalRevenue: 0,
+                pendingPayments: 0,
+                criticalAlerts: 0,
+            });
+            setLoading(false);
+        }, 1000);
+        // fetchDashboardData();
     }, []);
 
     const fetchDashboardData = async () => {
+        console.log('=== Starting dashboard fetch ===');
+
+        // Check if token exists
+        const token = localStorage.getItem('token');
+        console.log('Token exists:', !!token);
+        console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'null');
+
+        if (!token) {
+            console.error('No token found! Redirecting to login...');
+            window.location.href = '/auth/login';
+            return;
+        }
+
         try {
-            // Fetch all data in parallel
-            const [customersRes, devicesRes, paymentsRes, alertsRes] = await Promise.all([
-                customerAPI.getAll(),
-                deviceAPI.getStats(),
-                paymentAPI.getStats(),
-                alertAPI.getStats(),
-            ]);
+            console.log('Fetching customers...');
+            console.log('API URL:', process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000');
+
+            const customersRes = await customerAPI.getAll().catch(e => {
+                console.error('Customers API error:', e);
+                return { data: [] };
+            });
+            console.log('Customers response:', customersRes);
+
+            console.log('Fetching device stats...');
+            const devicesRes = await deviceAPI.getStats().catch(e => {
+                console.error('Devices API error:', e);
+                return { data: { total: 0, online: 0, offline: 0 } };
+            });
+            console.log('Devices response:', devicesRes);
+
+            console.log('Fetching payment stats...');
+            const paymentsRes = await paymentAPI.getStats().catch(e => {
+                console.error('Payments API error:', e);
+                return { data: { totalRevenue: 0, pendingCount: 0 } };
+            });
+            console.log('Payments response:', paymentsRes);
+
+            console.log('Fetching alert stats...');
+            const alertsRes = await alertAPI.getStats().catch(e => {
+                console.error('Alerts API error:', e);
+                return { data: { critical: 0 } };
+            });
+            console.log('Alerts response:', alertsRes);
+
+            // API client interceptor returns response.data directly
+            // So customersRes is actually the data object {success, data}
+            const customers = Array.isArray(customersRes?.data) ? customersRes.data : (Array.isArray(customersRes) ? customersRes : []);
+            const deviceStats = devicesRes?.data || devicesRes || {};
+            const paymentStats = paymentsRes?.data || paymentsRes || {};
+            const alertStats = alertsRes?.data || alertsRes || {};
+
+            console.log('Parsed data:', {
+                customersCount: customers.length,
+                deviceStats,
+                paymentStats,
+                alertStats
+            });
 
             setStats({
-                totalCustomers: customersRes.data?.length || 0,
-                activeCustomers: customersRes.data?.filter((c: any) => c.status === 'active').length || 0,
-                totalDevices: devicesRes.data?.total || 0,
-                onlineDevices: devicesRes.data?.online || 0,
-                totalRevenue: paymentsRes.data?.totalRevenue || 0,
-                pendingPayments: paymentsRes.data?.pendingCount || 0,
-                criticalAlerts: alertsRes.data?.critical || 0,
+                totalCustomers: customers.length || 0,
+                activeCustomers: customers.filter((c: any) => c.status === 'active').length || 0,
+                totalDevices: deviceStats.total || 0,
+                onlineDevices: deviceStats.online || 0,
+                totalRevenue: paymentStats.totalRevenue || 0,
+                pendingPayments: paymentStats.pendingCount || 0,
+                criticalAlerts: alertStats.critical || 0,
             });
+
+            console.log('=== Dashboard fetch completed ===');
         } catch (error: any) {
+            console.error('=== Dashboard FATAL error ===', error);
             toast.error('Gagal memuat data dashboard');
-            console.error(error);
+            // Set default stats even on error
+            setStats({
+                totalCustomers: 0,
+                activeCustomers: 0,
+                totalDevices: 0,
+                onlineDevices: 0,
+                totalRevenue: 0,
+                pendingPayments: 0,
+                criticalAlerts: 0,
+            });
         } finally {
+            console.log('=== Setting loading to false ===');
             setLoading(false);
         }
     };

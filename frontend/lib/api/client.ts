@@ -8,14 +8,19 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 seconds timeout
 });
 
 // Request interceptor - add auth token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Only access localStorage in browser environment
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      console.log(`API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
     }
     return config;
   },
@@ -29,10 +34,12 @@ apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/auth/login';
+      // Unauthorized - clear token and redirect to login (only in browser)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/auth/login';
+      }
     }
     return Promise.reject(error.response?.data || error.message);
   }
