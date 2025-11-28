@@ -23,7 +23,7 @@ module.exports = (sequelize) => {
       }
     },
     type: {
-      type: DataTypes.ENUM('router', 'switch', 'access-point', 'server', 'firewall', 'mikrotik', 'olt', 'other'),
+      type: DataTypes.ENUM('router', 'switch', 'access-point', 'server', 'firewall', 'mikrotik', 'olt', 'pop', 'odp', 'other'),
       allowNull: false
     },
     brand: {
@@ -50,6 +50,16 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING(200),
       allowNull: true,
       comment: 'Device location/address'
+    },
+    latitude: {
+      type: DataTypes.DECIMAL(10, 8),
+      allowNull: true,
+      comment: 'GPS latitude coordinate'
+    },
+    longitude: {
+      type: DataTypes.DECIMAL(11, 8),
+      allowNull: true,
+      comment: 'GPS longitude coordinate'
     },
     description: {
       type: DataTypes.TEXT,

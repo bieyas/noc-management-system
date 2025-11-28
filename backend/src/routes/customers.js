@@ -6,12 +6,21 @@ const {
   createCustomer,
   updateCustomer,
   deleteCustomer,
-  updateCustomerStatus
+  updateCustomerStatus,
+  getCustomerStats,
+  syncCustomerStatus
 } = require('../controllers/customerController');
 const { protect, authorize } = require('../middleware/auth');
 
 // All routes require authentication
 router.use(protect);
+
+// Stats route (must be before /:id)
+router.get('/stats', getCustomerStats);
+
+// Sync route
+router.post('/sync', syncCustomerStatus);
+router.post('/sync/:deviceId', syncCustomerStatus);
 
 router.route('/')
   .get(getCustomers)

@@ -110,39 +110,35 @@ class MonitoringService {
         lastSeen: device.lastSeen
       });
 
-        // Create alert if device went offline
-        if (newStatus === 'offline') {
-          const alert = await Alert.create({
-            deviceId: device.id,
-            severity: 'high',
-            type: 'device-down',
-            title: `Device ${device.name} is offline`,
-            description: `Device ${device.name} (${device.ipAddress}) is not responding to ping requests.`,
-            status: 'active'
-          });
+      // Create alert if device went offline
+      if (newStatus === 'offline') {
+        const alert = await Alert.create({
+          deviceId: device.id,
+          severity: 'high',
+          type: 'device-down',
+          title: `Device ${device.name} is offline`,
+          description: `Device ${device.name} (${device.ipAddress}) is not responding to ping requests.`,
+          status: 'active'
+        });
 
-          // Emit alert via WebSocket
-          socketService.emitNewAlert(alert.toJSON());
-        } else {
-          // Create alert when device comes back online
-          const alert = await Alert.create({
-            deviceId: device.id,
-            severity: 'info',
-            type: 'device-up',
-            title: `Device ${device.name} is back online`,
-            description: `Device ${device.name} (${device.ipAddress}) is now responding.`,
-            status: 'active'
-          });
+        // Emit alert via WebSocket
+        socketService.emitNewAlert(alert.toJSON());
+      } else {
+        // Create alert when device comes back online
+        const alert = await Alert.create({
+          deviceId: device.id,
+          severity: 'info',
+          type: 'device-up',
+          title: `Device ${device.name} is back online`,
+          description: `Device ${device.name} (${device.ipAddress}) is now responding.`,
+          status: 'active'
+        });
 
-          // Emit alert via WebSocket
-          socketService.emitNewAlert(alert.toJSON());
-        }
+        // Emit alert via WebSocket
+        socketService.emitNewAlert(alert.toJSON());
       }
-
-      return result;
     } catch (error) {
-      console.error(`Error pinging device ${device.name}:`, error.message);
-      return { alive: false, error: error.message };
+      console.error(`Error updating device status ${device.name}:`, error.message);
     }
   }
 

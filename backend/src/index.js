@@ -12,6 +12,7 @@ const { errorHandler, notFound } = require('./middleware/error');
 const monitoringService = require('./services/monitoringService');
 const billingService = require('./services/billingService');
 const socketService = require('./services/socketService');
+const customerSyncService = require('./services/customerSyncService');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -127,6 +128,9 @@ const server = app.listen(PORT, HOST, () => {
 
   // Start billing automation
   billingService.start();
+  
+  // Start customer sync service
+  customerSyncService.startPeriodicSync();
 });
 
 // Handle unhandled promise rejections
@@ -141,6 +145,7 @@ process.on('SIGTERM', () => {
   console.log('SIGTERM signal received: closing HTTP server');
   monitoringService.stop();
   billingService.stop();
+  customerSyncService.stopPeriodicSync();
   server.close(() => {
     console.log('HTTP server closed');
   });

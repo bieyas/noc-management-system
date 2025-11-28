@@ -58,6 +58,88 @@ module.exports = (sequelize) => {
       defaultValue: 'pending',
       allowNull: false
     },
+    
+    // Service Information
+    serviceType: {
+      type: DataTypes.ENUM('pppoe', 'hotspot', 'static'),
+      defaultValue: 'pppoe',
+      allowNull: true
+    },
+    username: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      unique: true,
+      comment: 'PPPoE/Hotspot username'
+    },
+    planName: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: 'Internet plan/package name'
+    },
+    bandwidth: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      comment: 'e.g., 10M/10M, 20M/20M'
+    },
+    ipAddress: {
+      type: DataTypes.STRING(45),
+      allowNull: true,
+      comment: 'Assigned IP address'
+    },
+    
+    // Device Information
+    deviceInfo: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      comment: 'Device details: type, brand, model, signal strength, etc.'
+    },
+    macAddress: {
+      type: DataTypes.STRING(17),
+      allowNull: true,
+      comment: 'CPE MAC address'
+    },
+    lastDeviceType: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      comment: 'Last detected device type'
+    },
+    
+    // Connection Status (from MikroTik)
+    connectionStatus: {
+      type: DataTypes.ENUM('online', 'offline', 'unknown'),
+      defaultValue: 'offline',
+      allowNull: true,
+      comment: 'Real-time connection status from MikroTik'
+    },
+    lastOnline: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'Last seen online timestamp'
+    },
+    
+    // Billing Information
+    monthlyFee: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      comment: 'Monthly subscription fee'
+    },
+    billingDay: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1,
+      allowNull: true,
+      validate: {
+        min: 1,
+        max: 31
+      },
+      comment: 'Day of month for billing'
+    },
+    
+    // Dates
+    installationDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      comment: 'Service installation date'
+    },
     registrationDate: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
@@ -79,7 +161,13 @@ module.exports = (sequelize) => {
         fields: ['email']
       },
       {
+        fields: ['username']
+      },
+      {
         fields: ['status']
+      },
+      {
+        fields: ['connectionStatus']
       },
       {
         fields: ['registrationDate']
